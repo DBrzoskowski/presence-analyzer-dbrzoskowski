@@ -1,0 +1,57 @@
+<!doctype html>	
+<html lang=en>
+<head>
+    <meta charset=utf-8>
+    <title>Presence analyzer</title>
+    <meta name="keywords" content="" />
+    <meta name="description" content=""/>
+    <meta name="author" content="STX Next sp. z o.o."/>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0">
+    <link href="{{ url_for('static', filename='/css/normalize.css') }}" media="all" rel="stylesheet" type="text/css" />
+    <link href="{{ url_for('static', filename='/css/style.css') }}" media="all" rel="stylesheet" type="text/css" />
+    <script src="/static/js/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["corechart", "timeline"], 'language': 'pl'});
+    </script>
+{% block content %}
+
+{% endblock %}
+</head>
+<body>
+    <div id="main">
+        <div id="header">
+            <h1>Presence analyzer</h1>
+            <ul>{% if templates_name == "presence_weekday.html" %}
+                <li id="selected"><a href="{{ url_for('render_templates', templates_name='presence_weekday.html') }}">Presence by weekday</a></li>
+                {% else %}
+                <li><a href="{{ url_for('render_templates', templates_name='presence_weekday.html') }}">Presence by weekday</a></li>
+                {% endif %}
+                {% if templates_name == "mean_time_weekday.html" %}
+                <li id="selected"><a href="{{ url_for('render_templates', templates_name='mean_time_weekday.html') }}">Presence mean time</a></li>
+                {% else %}
+                 <li><a href="{{ url_for('render_templates', templates_name='mean_time_weekday.html') }}">Presence mean time</a></li>
+                {% endif %}
+                {% if templates_name == "presence_start_end.html" %}
+                <li id="selected"><a href="{{ url_for('render_templates', templates_name='presence_start_end.html') }}">Presence start-end</a></li>
+                {% else %}
+                <li><a href="{{ url_for('render_templates', templates_name='presence_start_end.html') }}">Presence start-end</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div id="content">
+            <h2>{% if templates_name == "presence_weekday.html" %} Presence by weekday {% elif templates_name == "mean_time_weekday.html" %} Presence mean time by weekday{% else %} Presence start-end weekday {% endif %}</h2>
+            <p>
+                <select id="user_id" style="display: none">
+                    <option value="">--</option>
+                </select>
+                <div id="chart_div" style="display: none">
+                </div>
+                <div id="loading">
+                    <img src="/static/img/loading.gif" />
+                </div>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
