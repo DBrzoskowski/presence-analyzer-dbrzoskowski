@@ -3,10 +3,9 @@
 Defines views.
 """
 
-from flask import redirect, abort
+from flask import abort, redirect, render_template
 import calendar
 import datetime
-
 from main import app
 from utils import (
     get_data,
@@ -21,12 +20,25 @@ import logging
 log = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
 
+@app.route('/<string:templates_name>/')
+def render_templates(templates_name):
+    """
+    Render view for .html file.
+    """
+    if not templates_name.endswith('.html'):
+        templates_name = '{}.html'.format(templates_name)
+    try:
+        return render_template(templates_name, templates_name=templates_name)
+    except:
+        abort(404)
+
+
 @app.route('/')
 def mainpage():
     """
     Redirects to front page.
     """
-    return redirect('/static/presence_weekday.html')
+    return redirect('/presence_weekday.html')
 
 
 @app.route('/api/v1/users', methods=['GET'])
