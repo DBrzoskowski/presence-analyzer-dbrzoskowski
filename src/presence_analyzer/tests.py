@@ -98,6 +98,26 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(data[0], expected_list[0])
         self.assertEqual(data[-1], expected_list[-1])
 
+    def test_presence_start_end(self):
+        """
+        Test start and end time of given user grouped by weekday.
+        """
+        resp = self.client.get('/api/v1/presence_start_end/11')
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        expected_list = [
+            ['Mon', 33134.0, 57257.0],
+            ['Tue', 33590.0, 50154.0],
+            ['Wed', 33206.0, 58527.0],
+            ['Thu', 35602.0, 58586.0],
+            ['Fri', 47816.0, 54242.0],
+            ['Sat', 0, 0],
+            ['Sun', 0, 0]
+        ]
+        self.assertEqual(data, expected_list)
+        self.assertEqual(data[0], expected_list[0])
+        self.assertEqual(data[-1], expected_list[-1])
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
 
@@ -158,6 +178,48 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
                 str(datetime.date(2013, 9, 12)), '%Y-%m-%d'
             )
         )
+
+    def test_group_by_start_end(self):
+        """
+        Test group by start, end.
+        """
+        excepted_result = {
+            0: {'end': [], 'start': []},
+            1: {'end': [79254, 61588],'start': [41580, 44500]},
+            2: {'end': [47188, 75988],'start': [19300, 44500]},
+            3: {'end': [79199, 86399],'start': [28169, 75599]},
+            4: {'end': [], 'start': []},
+            5: {'end': [], 'start': []},
+            6: {'end': [], 'start': []}
+        }
+        days = {
+            datetime.date(2013, 9, 10): {
+                'end': datetime.time(22, 0, 54),
+                'start': datetime.time(11, 33, 0),
+            },
+            datetime.date(2013, 9, 17): {
+                'end': datetime.time(17, 6, 28),
+                'start': datetime.time(12, 21, 40),
+            },
+            datetime.date(2013, 9, 11): {
+                'end': datetime.time(13, 6, 28),
+                'start': datetime.time(5, 21, 40),
+            },
+            datetime.date(2013, 9, 18): {
+                'end': datetime.time(21, 6, 28),
+                'start': datetime.time(12, 21, 40),
+            },
+            datetime.date(2013, 9, 12): {
+                'end': datetime.time(21, 59, 59),
+                'start': datetime.time(7, 49, 29),
+            },
+            datetime.date(2013, 9, 19): {
+                'end': datetime.time(23, 59, 59),
+                'start': datetime.time(20, 59, 59),
+            }
+        }
+        data = utils.group_by_start_end(days)
+        self.assertEqual(data, excepted_result)
 
     def test_seconds_since_midnight(self):
         """
