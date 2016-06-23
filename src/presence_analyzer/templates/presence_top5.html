@@ -1,41 +1,40 @@
 <%inherit file="base.html"/>
-<%block name="title"> Presence mean time by weekday  </%block>
+<%block name="title"> Presence top 5 by date  </%block>
 <%block name="content">
     <script src="${url_for('static', filename='/js/parseInterval.js')}"></script>
     <script type="text/javascript" >
         (function($) {
             $(document).ready(function() {
                 var loading = $('#loading');
-                $.getJSON("${url_for('xml_data_view')}", function(result) {
+                $.getJSON("${url_for('dates_view')}", function(result) {
                     var dropdown = $("#dropdown_data");
                     $.each(result, function(item) {
-                        avatar[this.user_id] = this.avatar;
-                        dropdown.append($("<option />").val(this.user_id).text(this.name));
+                        dropdown.append($("<option />").val(this.date_id).text(this.name));
                     });
                     dropdown.show();
                     loading.hide();
                 });
                 $('#dropdown_data').change(function() {
                     var selected_user = $("#dropdown_data").val(),
-                        image = $('#avatar'),
                         chart_div = $('#chart_div');
                     if(selected_user) {
                         loading.show();
-                        image.attr('src', avatar[selected_user]);
                         chart_div.hide();
-                        $.getJSON("${url_for('mean_time_weekday_view', user_id=0)[:-2]}/"+selected_user, function(result) {
+                        $.getJSON("${url_for('presence_top5_view', date_id='0')[:-2]}/"+selected_user, function(result) {
                             var options = {},
                                 formatter;
                             if (result.length) {
                                 $.each(result, function(index, value) {
                                     value[1] = parseInterval(value[1]);
+                                    value[2] = parseInterval(value[2]);
                                 });
                                 var data = new google.visualization.DataTable();
-                                data.addColumn('string', 'Weekday');
-                                data.addColumn('datetime', 'Mean time (h:m:s)');
+                                data.addColumn('string', 'Users');
+                                data.addColumn({type: 'datetime', id: 'Start' });
+                                data.addColumn({type: 'datetime', id: 'End' });
                                 data.addRows(result);
                                 options = {
-                                    hAxis: {title: 'Weekday'}
+                                    hAxis: {title: 'Top 5 Users'},
                                 };
                                 formatter = new google.visualization.DateFormat({pattern: 'HH:mm:ss'});
                                 formatter.format(data, 1);
@@ -44,8 +43,9 @@
                             }
                             chart_div.show();
                             loading.hide();
-                            var chart = new google.visualization.ColumnChart(chart_div[0]);
+                            var chart = new google.visualization.Timeline(chart_div[0]);
                             chart.draw(data, options);
+
                         });
                     }
                 });

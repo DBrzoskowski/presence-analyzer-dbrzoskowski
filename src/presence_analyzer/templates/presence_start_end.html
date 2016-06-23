@@ -7,7 +7,7 @@
             $(document).ready(function() {
                 var loading = $('#loading');
                 $.getJSON("${url_for('xml_data_view')}", function(result) {
-                    var dropdown = $("#user_id");
+                    var dropdown = $("#dropdown_data");
                     $.each(result, function(item) {
                         avatar[this.user_id] = this.avatar;
                         dropdown.append($("<option />").val(this.user_id).text(this.name));
@@ -15,8 +15,8 @@
                     dropdown.show();
                     loading.hide();
                 });
-                $('#user_id').change(function() {
-                    var selected_user = $("#user_id").val(),
+                $('#dropdown_data').change(function() {
+                    var selected_user = $("#dropdown_data").val(),
                         image = $('#avatar'),
                         chart_div = $('#chart_div');
                     if(selected_user) {
