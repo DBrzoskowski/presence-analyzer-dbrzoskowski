@@ -1,7 +1,8 @@
 <% navigation = [
     ('presence_weekday.html', 'Presence by weekday'), 
     ('mean_time_weekday.html', 'Presence mean time'), 
-    ('presence_start_end.html', 'Presence start-end')
+    ('presence_start_end.html', 'Presence start-end'),
+    ('presence_top5.html', 'Presence top5')
 ]%>
 <!doctype html>	
 <html lang=en>
@@ -41,7 +42,7 @@
         <div id="content">
             <h2><%block name="title"> </%block></h2>
             <p>
-                <select id="user_id" style="display: none">
+                <select id="dropdown_data" style="display: none">
                     <option value="">--</option>
                 </select>
                 <div>

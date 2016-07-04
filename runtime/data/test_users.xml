@@ -18,6 +18,14 @@
             <avatar>/api/images/users/16</avatar>
             <name>Kamil K.</name>
         </user>
+        <user id="23">
+            <avatar>/api/images/users/23</avatar>
+            <name>Marek B.</name>
+        </user>
+        <user id="20">
+            <avatar>/api/images/users/20</avatar>
+            <name>Marek P.</name>
+        </user>
     </users>
 </intranet>
 

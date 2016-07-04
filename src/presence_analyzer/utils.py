@@ -193,3 +193,71 @@ def mean(items):
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
 
+
+def date_set(data):
+    """
+    Get data from get_data() and return list unique dates.
+    """
+    result = []
+    for user_id in data:
+        dates = data[user_id].keys()
+        for i in dates:
+            result.append(i)
+    return list(set(result))
+
+
+def dates_parser():
+    """
+    Get data from dates_parser and return dict like this:
+    datetime.date(2013, 9, 12): {
+        174: 30039,
+        175: 24966,
+        176: 29814,
+        177: 28820,
+        175: 24966,
+        176: 29814,
+        177: 28820,
+        175: 24966,
+        176: 29814,
+        177: 28820,
+        178: 28989,
+        179: 4200}
+    }
+    """
+    xml_data = xml_data_parser()
+    data = get_data()
+    dates_set = date_set(data)
+    temp = {}
+    result = {}
+    for user_id in data:
+        for date in data[user_id].keys():
+            if user_id in xml_data:
+                if date in dates_set:
+                    temp.setdefault(date, {})[user_id] = mean([
+                        interval(
+                            data[user_id][date]['start'],
+                            data[user_id][date]['end']
+                            )
+                        ]
+                    )
+                if temp[date] not in result.keys():
+                    result[date] = temp[date]
+    return result
+
+
+def top5_users(key):
+    """
+    Get data from data_parser and return presence top5 for day.
+    """
+    data = get_data()
+    result = {}
+    dates = dates_parser()
+    for date in dates:
+        result = sorted(
+            dates[date].items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:5]
+        dates[date] = result
+    return dates[key]
+

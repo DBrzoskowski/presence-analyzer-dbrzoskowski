@@ -51,17 +51,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 302)
         assert resp.headers['Location'].endswith('/presence_weekday.html')
 
-    def test_api_users(self):
-        """
-        Test users listing.
-        """
-        resp = self.client.get('/api/v1/users')
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.content_type, 'application/json')
-        data = json.loads(resp.data)
-        self.assertEqual(len(data), 2)
-        self.assertDictEqual(data[0], {'user_id': 10, 'name': 'User 10'})
-
     def test_xml_data(self):
         resp = self.client.get('/api/v2/users')
         self.assertEqual(resp.status_code, 200)
@@ -81,10 +70,10 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.data)
         expected_list = [
-            ['Mon', 0],
+            ['Mon', 23705.0],
             ['Tue', 30047.0],
             ['Wed', 24465.0],
-            ['Thu', 23705.0],
+            ['Thu', 0],
             ['Fri', 0],
             ['Sat', 0],
             ['Sun', 0]
@@ -102,11 +91,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         data = json.loads(resp.data)
         expected_list = [
             ['Weekday', 'Presence (s)'],
-            ['Mon', 24123],
+            ['Mon', 30549],
             ['Tue', 16564],
             ['Wed', 25321],
             ['Thu', 45968],
-            ['Fri', 6426],
+            ['Fri', 0],
             ['Sat', 0],
             ['Sun', 0]
         ]
@@ -122,11 +111,11 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.data)
         expected_list = [
-            ['Mon', 33134.0, 57257.0],
+            ['Mon', 40475.0, 55749.5],
             ['Tue', 33590.0, 50154.0],
             ['Wed', 33206.0, 58527.0],
             ['Thu', 35602.0, 58586.0],
-            ['Fri', 47816.0, 54242.0],
+            ['Fri', 0, 0],
             ['Sat', 0, 0],
             ['Sun', 0, 0]
         ]
@@ -134,9 +123,26 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
         self.assertEqual(data[0], expected_list[0])
         self.assertEqual(data[-1], expected_list[-1])
 
+    def test_presence_top5(self):
+        """
+        Test presence top5.
+        """
+        resp = self.client.get("/api/v2/presence_top5/29-4-2013")
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        expected_list = [
+            ['Marek B.', 0, 30878.0],
+            ['Adam P.', 0, 29067.0],
+            ['Marek P.', 0, 28808.0],
+            ['Kamil K.', 0, 20843.0],
+            ['Kajetan O.', 0, 3414.0]
+        ]
+        self.assertEqual(data, expected_list)
+        self.assertEqual(data[0], expected_list[0])
+        self.assertEqual(data[-1], expected_list[-1])
+
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
-
     """
     Utility functions tests.
     """
@@ -175,7 +181,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         """
         data = utils.get_data()
         self.assertIsInstance(data, dict)
-        self.assertItemsEqual(data.keys(), [10, 11])
+        self.assertItemsEqual(data.keys(), [130, 10, 11, 141, 16, 20, 23])
         sample_date = datetime.date(2013, 9, 10)
         self.assertIn(sample_date, data[10])
         self.assertItemsEqual(data[10][sample_date].keys(), ['start', 'end'])
@@ -327,6 +333,91 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(date[0], 34465.57142857143)
         self.assertEqual(date[1], 0)
         self.assertEqual(date[2], -16604)
+
+    def test_date_set(self):
+        """
+        Test list set unique dates
+        """
+        test_data = {
+            177: {
+                datetime.date(2013, 9, 9): {
+                    'end': datetime.time(16, 51, 44),
+                    'start': datetime.time(9, 21, 59)
+                },
+                datetime.date(2013, 9, 10): {
+                    'end': datetime.time(16, 55, 7),
+                    'start': datetime.time(8, 47, 52)
+                },
+                datetime.date(2013, 9, 11): {
+                    'end': datetime.time(16, 52, 44),
+                    'start': datetime.time(8, 51, 11)
+                },
+                datetime.date(2013, 9, 12): {
+                    'end': datetime.time(16, 36, 2),
+                    'start': datetime.time(8, 35, 42)
+                }
+            },
+            178: {
+                datetime.date(2013, 9, 9): {
+                    'end': datetime.time(17, 14, 42),
+                    'start': datetime.time(11, 43, 50)
+                },
+                datetime.date(2013, 9, 10): {
+                    'end': datetime.time(19, 0, 12),
+                    'start': datetime.time(8, 59, 59)
+                },
+                datetime.date(2013, 9, 11): {
+                    'end': datetime.time(17, 2, 37),
+                    'start': datetime.time(9, 1, 26)
+                },
+                datetime.date(2013, 9, 12): {
+                    'end': datetime.time(17, 3, 8),
+                    'start': datetime.time(8, 59, 59)
+                }
+            },
+            179: {
+                datetime.date(2013, 9, 12): {
+                    'end': datetime.time(18, 5, 24),
+                    'start': datetime.time(16, 55, 24)
+                }
+            }
+        }
+        data = utils.date_set(test_data)
+        date = datetime.date(2013, 9, 12)
+        self.assertIsInstance(data, list)
+        self.assertEqual(data[1], date)
+        self.assertNotEqual(data[0], date)
+
+    def test_dates_parser(self):
+        """
+        Test dict unique dates and values user_id, work spend time.
+        """
+        data = utils.dates_parser()
+        date = datetime.date(2013, 4, 29)
+        self.assertIsInstance(data, dict)
+        self.assertEqual(data[date], {
+            16: 20843.0,
+            130: 3414.0,
+            20: 28808.0,
+            141: 29067.0,
+            23: 30878.0
+            }
+        )
+        self.assertIsInstance(data[date][130], float)
+
+    def test_top5_users(self):
+        data = utils.top5_users(datetime.date(2013, 4, 29))
+        self.assertIsInstance(data, list)
+        self.assertEqual(len(data), 5)
+        self.assertEqual(data, [
+            (23, 30878.0),
+            (141, 29067.0),
+            (20, 28808.0),
+            (16, 20843.0),
+            (130, 3414.0)
+            ]
+        )
+        self.assertIsInstance(data[0][1], float)
 
 
 def suite():
