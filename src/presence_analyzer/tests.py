@@ -90,8 +90,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Sun', 0]
         ]
         self.assertEqual(data, expected_list)
-        self.assertEqual(data[0], expected_list[0])
-        self.assertEqual(data[-1], expected_list[-1])
 
     def test_presence_weekday_view(self):
         """
@@ -111,8 +109,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Sun', 0]
         ]
         self.assertEqual(data, expected_list)
-        self.assertEqual(data[0], expected_list[0])
-        self.assertEqual(data[-1], expected_list[-1])
 
     def test_presence_start_end(self):
         """
@@ -131,8 +127,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Sun', 0, 0]
         ]
         self.assertEqual(data, expected_list)
-        self.assertEqual(data[0], expected_list[0])
-        self.assertEqual(data[-1], expected_list[-1])
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
@@ -192,7 +186,7 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertIsInstance(data, dict)
         self.assertIsInstance(data.keys()[0], int)
         self.assertEqual(
-            data[141], {
+            data[11], {
                 'name': 'Adam P.',
                 'avatar': 'https://intranet.stxnext.pl/api/images/users/141'
             }
@@ -327,6 +321,99 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(date[0], 34465.57142857143)
         self.assertEqual(date[1], 0)
         self.assertEqual(date[2], -16604)
+
+    def test_months_set(self):
+        """
+        Test months set.
+        """
+        expected_result = [
+            datetime.date(2013, 9, 13),
+            datetime.date(2013, 9, 12),
+            datetime.date(2013, 9, 11),
+            datetime.date(2013, 9, 10),
+            datetime.date(2013, 9, 9),
+            datetime.date(2013, 9, 5)
+        ]
+        data = utils.months_set()
+        self.assertEqual(data, expected_result)
+
+    def test_dates_parser(self):
+        """
+        Test dates parser where reverse user to date.
+        """
+        data = utils.dates_parser()
+        date = datetime.date(2013, 9, 5)
+        expected_result = {
+            date: {
+                11: [
+                        'Adam P.',
+                        22999.0,
+                        'https://intranet.stxnext.pl/api/images/users/141'
+                ]
+            },
+        }
+        self.assertEqual(data[date], expected_result[date])
+
+    def test_group_date_by_month(self):
+        """
+        Test group days by month and year.
+        """
+        data = utils.group_date_by_month()
+        expected_result = {
+            (9, 2013): [
+                datetime.date(2013, 9, 5),
+                datetime.date(2013, 9, 9),
+                datetime.date(2013, 9, 10),
+                datetime.date(2013, 9, 11),
+                datetime.date(2013, 9, 12),
+                datetime.date(2013, 9, 13)
+            ]
+        }
+        self.assertEqual(data, expected_result)
+
+    def test_group_by_month(self):
+        """
+        Test groups user month spend time.
+        """
+        data = utils.group_by_month('September-2013')
+        expected_result = {
+            10: [
+                    'Kajetan O.',
+                    108264.0,
+                    'https://intranet.stxnext.pl/api/images/users/130'
+            ],
+            11: [
+                    'Adam P.',
+                    141401.0,
+                    'https://intranet.stxnext.pl/api/images/users/141'
+            ]
+        }
+        self.assertEqual(data, expected_result)
+
+    def test_top5_in_month(self):
+        """
+        Test top5 users in month.
+        """
+        data = utils.top5_in_month('September-2013')
+        expected_result = [
+            (
+                11,
+                [
+                    'Adam P.',
+                    141401.0,
+                    'https://intranet.stxnext.pl/api/images/users/141'
+                ]
+            ),
+            (
+                10,
+                [
+                    'Kajetan O.',
+                    108264.0,
+                    'https://intranet.stxnext.pl/api/images/users/130'
+                ]
+            )
+        ]
+        self.assertEqual(data, expected_result)
 
 
 def suite():

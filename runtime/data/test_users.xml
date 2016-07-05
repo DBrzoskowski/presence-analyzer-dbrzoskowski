@@ -6,11 +6,11 @@
         <protocol>https</protocol>
     </server>
     <users>
-        <user id="130">
+        <user id="10">
             <avatar>/api/images/users/130</avatar>
             <name>Kajetan O.</name>
         </user>
-        <user id="141">
+        <user id="11">
             <avatar>/api/images/users/141</avatar>
             <name>Adam P.</name>
         </user>
