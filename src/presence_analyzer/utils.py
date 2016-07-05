@@ -110,6 +110,8 @@ def get_data():
     return data
 
 
+@lock
+@cache(600)
 def xml_data_parser():
     """
     Parse data from xml file.
@@ -192,4 +194,28 @@ def mean(items):
     Calculates arithmetic mean. Returns zero for empty lists.
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
+
+
+def group_by_spend_time(items):
+    """
+    User spend time in work for date.
+    """
+    result = {}
+    for date in items:
+        start = items[date]['start']
+        end = items[date]['end']
+        result[date.strftime("%d-%m-%Y")] = interval(start, end)
+    return result
+
+
+def top5_dates(items):
+    """
+    Group top5 dates for user.
+    """
+    dates = group_by_spend_time(items)
+    return sorted(
+        dates.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:5]
 

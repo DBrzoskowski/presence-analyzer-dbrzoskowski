@@ -14,11 +14,13 @@ from jinja2.exceptions import TemplateNotFound
 from main import app
 from utils import (
     get_data,
+    group_by_spend_time,
     group_by_start_end,
     group_by_weekday,
     jsonify,
     mean,
     seconds_since_midnight,
+    top5_dates,
     xml_data_parser
 )
 
@@ -68,7 +70,8 @@ def xml_data_view():
     """
     data = xml_data_parser()
     return [
-        {'user_id': i,
+        {
+            'user_id': i,
             'name': data[i]['name'],
             'avatar': data[i]['avatar']
         }
@@ -133,6 +136,25 @@ def presence_start_end_view(user_id):
         mean(start_end_weekdays[weekday]['start']),
         mean(start_end_weekdays[weekday]['end']))
         for weekday, intervals in enumerate(weekdays)
+    ]
+    return result
+
+
+@app.route('/api/v2/user_top5_dates/<int:user_id>', methods=['GET'])
+@jsonify
+def presence_top5_dates_view(user_id):
+    """
+    Returns top5 dates for user.
+    """
+    data = get_data()
+    if user_id not in data:
+        log.debug('User %s not found!', user_id)
+        return []
+
+    top_5 = top5_dates(data[user_id])
+    result = [(
+        date[0], 0, date[1])
+        for date in top_5
     ]
     return result
 
