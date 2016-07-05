@@ -90,8 +90,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Sun', 0]
         ]
         self.assertEqual(data, expected_list)
-        self.assertEqual(data[0], expected_list[0])
-        self.assertEqual(data[-1], expected_list[-1])
 
     def test_presence_weekday_view(self):
         """
@@ -111,8 +109,6 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Sun', 0]
         ]
         self.assertEqual(data, expected_list)
-        self.assertEqual(data[0], expected_list[0])
-        self.assertEqual(data[-1], expected_list[-1])
 
     def test_presence_start_end(self):
         """
@@ -131,8 +127,22 @@ class PresenceAnalyzerViewsTestCase(unittest.TestCase):
             ['Sun', 0, 0]
         ]
         self.assertEqual(data, expected_list)
-        self.assertEqual(data[0], expected_list[0])
-        self.assertEqual(data[-1], expected_list[-1])
+
+    def test_presence_top5_dates_view(self):
+        """
+        Test top5 spend work date for user.
+        """
+        resp = self.client.get('/api/v2/user_top5_dates/11')
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.data)
+        expected_list = [
+            ['11-09-2013', 0, 25321],
+            ['09-09-2013', 0, 24123],
+            ['05-09-2013', 0, 22999],
+            ['12-09-2013', 0, 22969],
+            ['10-09-2013', 0, 16564]
+        ]
+        self.assertEqual(data, expected_list)
 
 
 class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
@@ -327,6 +337,87 @@ class PresenceAnalyzerUtilsTestCase(unittest.TestCase):
         self.assertEqual(date[0], 34465.57142857143)
         self.assertEqual(date[1], 0)
         self.assertEqual(date[2], -16604)
+
+    def test_group_by_spend_time(self):
+        """
+        Test group by spend time in work for date.
+        """
+        expected_result = {
+            '10-09-2013': 37674,
+            '11-09-2013': 27888,
+            '12-09-2013': 51030,
+            '17-09-2013': 17088,
+            '18-09-2013': 31488,
+            '19-09-2013': 10800
+        }
+        days = {
+            datetime.date(2013, 9, 10): {
+                'end': datetime.time(22, 0, 54),
+                'start': datetime.time(11, 33, 0),
+            },
+            datetime.date(2013, 9, 17): {
+                'end': datetime.time(17, 6, 28),
+                'start': datetime.time(12, 21, 40),
+            },
+            datetime.date(2013, 9, 11): {
+                'end': datetime.time(13, 6, 28),
+                'start': datetime.time(5, 21, 40),
+            },
+            datetime.date(2013, 9, 18): {
+                'end': datetime.time(21, 6, 28),
+                'start': datetime.time(12, 21, 40),
+            },
+            datetime.date(2013, 9, 12): {
+                'end': datetime.time(21, 59, 59),
+                'start': datetime.time(7, 49, 29),
+            },
+            datetime.date(2013, 9, 19): {
+                'end': datetime.time(23, 59, 59),
+                'start': datetime.time(20, 59, 59),
+            }
+        }
+        data = utils.group_by_spend_time(days)
+        self.assertEqual(data, expected_result)
+
+    def test_top5_dates(self):
+        """
+        Test group top5 dates for spend time.
+        """
+        expected_result = [
+            ('12-09-2013', 51030),
+            ('10-09-2013', 37674),
+            ('18-09-2013', 31488),
+            ('11-09-2013', 27888),
+            ('17-09-2013', 17088)
+        ]
+        days = {
+            datetime.date(2013, 9, 10): {
+                'end': datetime.time(22, 0, 54),
+                'start': datetime.time(11, 33, 0),
+            },
+            datetime.date(2013, 9, 17): {
+                'end': datetime.time(17, 6, 28),
+                'start': datetime.time(12, 21, 40),
+            },
+            datetime.date(2013, 9, 11): {
+                'end': datetime.time(13, 6, 28),
+                'start': datetime.time(5, 21, 40),
+            },
+            datetime.date(2013, 9, 18): {
+                'end': datetime.time(21, 6, 28),
+                'start': datetime.time(12, 21, 40),
+            },
+            datetime.date(2013, 9, 12): {
+                'end': datetime.time(21, 59, 59),
+                'start': datetime.time(7, 49, 29),
+            },
+            datetime.date(2013, 9, 19): {
+                'end': datetime.time(23, 59, 59),
+                'start': datetime.time(20, 59, 59),
+            }
+        }
+        data = utils.top5_dates(days)
+        self.assertEqual(data, expected_result)
 
 
 def suite():
