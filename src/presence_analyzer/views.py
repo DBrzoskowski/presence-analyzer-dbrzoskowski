@@ -13,12 +13,17 @@ from jinja2.exceptions import TemplateNotFound
 
 from main import app
 from utils import (
+    dates_parser,
     get_data,
+    group_by_month,
     group_by_start_end,
     group_by_weekday,
+    group_date_by_month,
     jsonify,
     mean,
+    months_set,
     seconds_since_midnight,
+    top5_in_month,
     xml_data_parser
 )
 
@@ -68,11 +73,34 @@ def xml_data_view():
     """
     data = xml_data_parser()
     return [
-        {'user_id': i,
+        {
+            'user_id': i,
             'name': data[i]['name'],
             'avatar': data[i]['avatar']
         }
         for i in data
+    ]
+
+
+@app.route('/api/v2/months', methods=['GET'])
+@jsonify
+def months_data_view():
+    """
+    Loading unique months from months_set.
+    """
+    months = months_set()
+    return [
+        {
+            'month_id': '{month}-{year}'.format(
+                month=i.strftime("%B"), 
+                year=i.year
+                ),
+            'name': '{month}-{year}'.format(
+                month=i.strftime("%B"), 
+                year=i.year
+                )
+        }
+        for i in months
     ]
 
 
@@ -135,4 +163,30 @@ def presence_start_end_view(user_id):
         for weekday, intervals in enumerate(weekdays)
     ]
     return result
+
+
+@app.route('/api/v2/months_top5/<string:date_id>', methods=['GET'])
+@jsonify
+def presence_months_top5_view(date_id):
+    """
+    Returns top5 users for month.
+    """
+    data = top5_in_month(date_id)
+    date_by_month = group_date_by_month(date_id)
+    date_int = (
+        list(calendar.month_abbr).index(date_id[:3]),
+        int(date_id[-4:])
+    )
+    if date_int not in date_by_month.keys():
+        log.debug('Month %s not found!', date_id)
+        return []
+
+    result = []
+    avatars = []
+    for i in data:
+        temp = list(i[1])
+        temp.insert(1, 0)
+        result.append(tuple(temp[:3]))
+        avatars.append(temp[3])
+    return result, avatars
 

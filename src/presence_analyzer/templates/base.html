@@ -1,7 +1,15 @@
 <% navigation = [
     ('presence_weekday.html', 'Presence by weekday'), 
     ('mean_time_weekday.html', 'Presence mean time'), 
-    ('presence_start_end.html', 'Presence start-end')
+    ('presence_start_end.html', 'Presence start-end'),
+    ('months_top5.html', 'Presence months top5')
+]%>
+<% avatars = [
+    "avatar0",
+    "avatar1",
+    "avatar2",
+    "avatar3",
+    "avatar4"
 ]%>
 <!doctype html>	
 <html lang=en>
@@ -44,17 +52,29 @@
                 <select id="user_id" style="display: none">
                     <option value="">--</option>
                 </select>
-                <div>
-                    <img id="avatar" src="" alt=""/>
-                </div>
-                <div id="chart_div" alt="" style="display: none">
-                </div>
+                    <div class="container" >
+                        % for url, title in navigation:
+                            % if url == 'months_top5.html':
+                                <div class="left" >
+                                % for avatar in avatars:
+                                    <img id=${avatar} src="" alt=""/><br>
+                                % endfor
+                                </div>
+                            % else:
+                                <div>
+                                    <img id="avatar" src="" alt=""/>
+                                </div>
+                            % endif
+                        % endfor
+                        <div class="right" id="chart_div" alt="" >
+                        </div>
+                    </div>
                 <div id="loading">
                     <img src="${url_for('static', filename='/img/loading.gif')}"/>
                 </div>
             </p>
         </div>
-    </div>  
+    </div>
 </body>
 </html>
 

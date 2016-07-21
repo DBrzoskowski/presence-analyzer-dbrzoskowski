@@ -3,6 +3,7 @@
 Helper functions used in views.
 """
 
+import calendar
 import csv
 import logging
 import os
@@ -11,6 +12,7 @@ import urllib2
 
 from datetime import datetime
 from functools import wraps
+from itertools import groupby
 from json import dumps
 from time import time
 
@@ -192,4 +194,96 @@ def mean(items):
     Calculates arithmetic mean. Returns zero for empty lists.
     """
     return float(sum(items)) / len(items) if len(items) > 0 else 0
+
+
+def months_set():
+    """
+    Get data from get_data() and return unique list months.
+    """
+    result = []
+    data = get_data()
+    for user_id in data:
+        dates = data[user_id].keys()
+        for i in dates:
+            result.append(i)
+    return list(set(result))
+
+
+def dates_parser():
+    """
+    Get data from get_data() and return dict like this:
+    datetime.date(2013, 9, 12): {
+        174: 30039,
+        175: 24966,
+        176: 29814
+    }
+    """
+    xml_data = xml_data_parser()
+    data = get_data()
+    months = months_set()
+    temp = {}
+    result = {}
+    for user_id in data:
+        for date in data[user_id].keys():
+            if user_id in xml_data and date in months:
+                temp.setdefault(date, {})[user_id] = [
+                    xml_data[user_id]['name'],
+                    mean([
+                        interval(
+                            data[user_id][date]['start'],
+                            data[user_id][date]['end']
+                            )
+                        ]
+                    ),
+                    xml_data[user_id]['avatar'],
+                ]
+                if temp[date] not in result.keys():
+                    result[date] = temp[date]
+    return result
+
+
+@lock
+@cache(600)
+def group_date_by_month():
+    """
+    Group days by month and year.
+    """
+    dates = dates_parser()
+    result = {}
+    sort = sorted(dates, key=lambda x: x)
+    for k, v in groupby(sort, key=lambda x: (x.month, x.year)):
+        result.update({k: list(v)})
+    return result
+
+
+def group_by_month(key):
+    """
+    Groups user month spend time.
+    """
+    dates = dates_parser()
+    result = {}
+    date_int = (
+        list(calendar.month_abbr).index(key[:3]),
+        int(key[-4:])
+    )
+    date_by_month = group_date_by_month()
+    for e in date_by_month[date_int]:
+        for x in dates[e]:
+            if x not in result:
+                result.update({x: dates[e][x]})
+            result[x][1] += dates[e][x][1]
+    return result
+
+
+def top5_in_month(key):
+    """
+    Return top5 spendtime in month.
+    """
+    months = group_by_month(key)
+    result = sorted(
+        months.items(),
+        key=lambda x: x[1][1],
+        reverse=True
+    )[:5]
+    return result
 
